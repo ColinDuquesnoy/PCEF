@@ -62,6 +62,12 @@ class OutputWindow(CodeEdit):
     #:    - line number (int, 0 based)
     open_file_requested = QtCore.Signal(str, int)
 
+    process_finished = QtCore.Signal()
+
+    @property
+    def is_running(self):
+        return self._process.state() == self._process.Running
+
     @property
     def color_scheme(self):
         return self._formatter.theme
@@ -306,15 +312,15 @@ class OutputWindow(CodeEdit):
     def _setup_process_environment(self, env):
         environ = self._process.processEnvironment()
         if env is None:
-            env = os.environ
-        if 'PYTHONUNBUFFERED' not in env:
-            env['PYTHONUNBUFFERED'] = '1'
-        if 'QT_LOGGING_TO_CONSOLE' not in env:
-            env['QT_LOGGING_TO_CONSOLE'] = '1'
+            env = {}
+        for k, v in os.environ.items():
+            environ.insert(k, v)
         for k, v in env.items():
             environ.insert(k, v)
         if sys.platform != 'win32':
             environ.insert('TERM', 'xterm')
+        environ.insert('PYTHONUNBUFFERED', '1')
+        environ.insert('QT_LOGGING_TO_CONSOLE', '1')
         return environ
 
     def _on_process_error(self, error):
@@ -330,6 +336,7 @@ class OutputWindow(CodeEdit):
         self._formatter.append_message('\x1b[0m\nProcess finished with exit code %d' % exit_code,
                                        output_format=OutputFormat.CustomFormat)
         self.setReadOnly(True)
+        self.process_finished.emit()
 
     def _read_stdout(self):
         output = self._process.readAllStandardOutput().data().decode()
