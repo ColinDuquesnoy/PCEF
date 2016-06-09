@@ -126,7 +126,7 @@ class OutputWindow(CodeEdit):
         self.flg_use_pty = False
 
     def start_process(self, program, arguments=None, working_dir=None, print_command=True,
-                      use_pseudo_terminal=False, env=None):
+                      use_pseudo_terminal=True, env=None):
         """
         Starts the child process.
 
