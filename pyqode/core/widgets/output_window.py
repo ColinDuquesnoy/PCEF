@@ -70,7 +70,7 @@ class OutputWindow(CodeEdit):
 
     @property
     def is_running(self):
-        return self._process.state() == self._process.Running
+        return self._process.state() in [self._process.Running, self._process.Starting]
 
     @property
     def color_scheme(self):
