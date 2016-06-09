@@ -727,10 +727,14 @@ def _qkey_to_ascii(event):
     """
     (Try to) convert the Qt key event to the corresponding ASCII sequence for
     the terminal. This works fine for standard alphanumerical characters, but
-    most other characters require terminal specific control sequences.
+    most other characters require terminal specific control_modifier sequences.
     The conversion below works for TERM="linux' terminals.
     """
-    if event.modifiers() == QtCore.Qt.ControlModifier:
+    if sys.platform == 'darwin':
+        control_modifier = QtCore.Qt.MetaModifier
+    else:
+        control_modifier = QtCore.Qt.ControlModifier
+    if event.modifiers() == control_modifier:
         if event.key() == QtCore.Qt.Key_P:
             return b'\x10'
         elif event.key() == QtCore.Qt.Key_N:
