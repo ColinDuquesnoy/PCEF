@@ -162,7 +162,7 @@ class OutputWindow(CodeEdit):
                                            output_format=OutputFormat.CustomFormat)
         self._process.start(pgm, args)
 
-    def terminate_process(self):
+    def stop_process(self):
         """
         Terminates the child process.
         """
@@ -249,7 +249,7 @@ class OutputWindow(CodeEdit):
         Terminates the child process on close.
         """
         super(OutputWindow, self).closeEvent(event)
-        self.terminate_process()
+        self.stop_process()
         self.backend.stop()
 
     def keyPressEvent(self, event):
