@@ -65,6 +65,10 @@ class OutputWindow(CodeEdit):
     process_finished = QtCore.Signal()
 
     @property
+    def process(self):
+        return self._process
+
+    @property
     def is_running(self):
         return self._process.state() == self._process.Running
 
