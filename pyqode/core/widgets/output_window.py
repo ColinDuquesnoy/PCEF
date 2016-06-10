@@ -967,8 +967,6 @@ class OutputFormatter:
         else:
             parts = [txt]
 
-        self._cursor.beginEditBlock()
-
         for i, part in enumerate(parts):
             if part:
                 part = part.replace('\r\r', '\r')
@@ -997,7 +995,6 @@ class OutputFormatter:
             if i != len(parts) - 1:
                 self._cursor_back(1)
         self._last_cursor_pos = self._cursor.position()
-        self._cursor.endEditBlock()
         self._text_edit.setTextCursor(self._cursor)
 
     def _draw_chars(self, data, to_draw):
