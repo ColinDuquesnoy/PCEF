@@ -817,10 +817,53 @@ def _qkey_to_ascii(event):
             return None
 
 
+class CommandHistory(object):
+    def __init__(self):
+        self._history = []
+        self._index = -1
+
+    def add_command(self, command):
+        try:
+            self._history.remove(command)
+        except ValueError:
+            pass
+        self._history.insert(0, command)
+        self._index = -1
+
+    def scroll_up(self):
+        self._index += 1
+        nb_commands = len(self._history)
+        if self._index >= nb_commands:
+            self._index = nb_commands - 1
+        try:
+            return self._history[self._index]
+        except IndexError:
+            return ''
+
+    def scroll_down(self):
+        self._index -= 1
+        if self._index < 0:
+            self._index = -1
+            return ''
+        try:
+            return self._history[self._index]
+        except IndexError:
+            return ''
+
+
 class BufferedInputHandler(InputHandler):
     def __init__(self):
         super(BufferedInputHandler, self).__init__()
         self._input_buffer = ''
+        self._history = CommandHistory()
+
+    def _insert_command(self, command):
+        tc = self.edit.textCursor()
+        for _ in self._input_buffer:
+            tc.deletePreviousChar()
+        tc.insertText(command)
+        self._input_buffer = command
+        self.edit.setTextCursor(tc)
 
     def key_press_event(self, event):
         """
@@ -844,6 +887,12 @@ class BufferedInputHandler(InputHandler):
                     self.process.write(b'\r')
                 self.process.write(b'\n')
                 return False
+        if event.key() == QtCore.Qt.Key_Up:
+            self._insert_command(self._history.scroll_up())
+            return False
+        if event.key() == QtCore.Qt.Key_Down:
+            self._insert_command(self._history.scroll_down())
+            return False
         if event.key() in [QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter]:
             # send the user input to the child process
             if self.edit.flg_use_pty:
@@ -853,6 +902,7 @@ class BufferedInputHandler(InputHandler):
                 for _ in self._input_buffer:
                     tc.deletePreviousChar()
                 self.edit.setTextCursor(tc)
+            self._history.add_command(self._input_buffer)
             if sys.platform == 'win32':
                 self._input_buffer += "\r"
             self._input_buffer += "\n"
