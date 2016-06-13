@@ -984,7 +984,11 @@ class OutputFormatter:
                         self._draw_chars(data, to_draw)
                         to_draw = ''
                         self._erase_in_line(0)
-                        if self._cursor.positionInBlock() > 80 and self.flg_bash:
+                        try:
+                            nchar = part[n + 1]
+                        except IndexError:
+                            nchar = None
+                        if self._cursor.positionInBlock() > 80 and self.flg_bash and nchar != '\n':
                             self._linefeed()
                         self._cursor.movePosition(self._cursor.StartOfBlock)
                         self._text_edit.setTextCursor(self._cursor)
@@ -1013,6 +1017,7 @@ class OutputFormatter:
         else:
             self._cursor.movePosition(self._cursor.Down)
             self._cursor.movePosition(self._cursor.StartOfBlock)
+        self._text_edit.setTextCursor(self._cursor)
 
     def _cursor_down(self, value):
         self._cursor.clearSelection()
