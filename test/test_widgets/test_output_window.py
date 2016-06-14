@@ -66,7 +66,7 @@ def test_buffered_input_handler():
     assert w.blockCount() == 1
     QtTest.QTest.keyPress(w, QtCore.Qt.Key_Return)
     QtTest.QTest.qWait(1000)
-    assert w.blockCount() > 2
+    assert w.blockCount() >= 2
 
 
 def test_immediate_input_handler():
@@ -80,4 +80,4 @@ def test_immediate_input_handler():
     assert w.blockCount() == 1
     QtTest.QTest.keyPress(w, QtCore.Qt.Key_Return)
     QtTest.QTest.qWait(1000)
-    assert w.blockCount() > 2
+    assert w.blockCount() >= 2
