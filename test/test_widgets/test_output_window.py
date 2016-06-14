@@ -1,5 +1,6 @@
 import os
 from pyqode.core.widgets import output_window
+from pyqode.qt import QtTest, QtCore
 
 
 DIRECTORY = os.path.dirname(__file__)
@@ -35,9 +36,48 @@ def test_parser():
     assert op.data.fmt.font().weight() != QtGui.QFont.Bold
 
 
-def test_output_window():
+def test_output_window_results():
     # functional test
     w = output_window.OutputWindow()
     w._formatter.append_message(RAW_OUTPUT)
     assert w.blockCount() == 173
     assert w.toPlainText() == PARSED_OUTPUT
+
+
+def test_output_window():
+    w = output_window.OutputWindow()
+    w.start_process('bash', arguments=['-l', '-i'], env={'TERM': 'xterm'})
+    w.show()
+    QtTest.QTest.qWait(1000)
+    w.stop_process()
+    QtTest.QTest.qWait(1000)
+    assert not w.is_running
+    assert w.process is not None
+
+
+def test_buffered_input_handler():
+    w = output_window.OutputWindow(input_handler=output_window.BufferedInputHandler())
+    w.start_process('bash', arguments=['-l', '-i'], env={'TERM': 'xterm'}, print_command=False)
+    w.show()
+    QtTest.QTest.qWait(1000)
+    assert w.blockCount() == 1
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_L)
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_S)
+    assert w.blockCount() == 1
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_Return)
+    QtTest.QTest.qWait(1000)
+    assert w.blockCount() > 2
+
+
+def test_immediate_input_handler():
+    w = output_window.OutputWindow(input_handler=output_window.ImmediateInputHandler())
+    w.start_process('bash', arguments=['-l', '-i'], env={'TERM': 'xterm'}, print_command=False)
+    w.show()
+    QtTest.QTest.qWait(1000)
+    assert w.blockCount() == 1
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_L)
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_S)
+    assert w.blockCount() == 1
+    QtTest.QTest.keyPress(w, QtCore.Qt.Key_Return)
+    QtTest.QTest.qWait(1000)
+    assert w.blockCount() > 2
